@@ -1,0 +1,44 @@
+<section class="Compute">
+  <div class="Compute-n Compute-header">
+    <fieldset class="Compute-H-complexity Compute-H-best">
+      <input id="C-best" name="Complexity" type="radio" value="C-best">
+      <label class="Compute-H-C-label" for="C-best">
+        <span class="Compute-H-C-L-span Compute-H-C-L-best"></span>
+        Best
+      </label>
+    </fieldset>
+    <fieldset class="Compute-H-complexity Compute-H-worst">
+      <input checked="checked" id="C-worst" name="Complexity" type="radio" value="C-worst">
+      <label class="Compute-H-C-label" for="C-worst">
+        <span class="Compute-H-C-L-span Compute-H-C-L-wost"></span>
+        Worst
+      </label>
+    </fieldset>
+    <div class="Compute-N-state Compute-H-compute">
+      Compute: <span class="Compute-H-start Compute-N-S-value  Compute-N-S-compute">0</span>
+    </div>
+    <div class="Compute-H-swap Compute-N-state">
+      Swapped:<span class="Compute-H-Swapped-false Compute-N-S-value">false</span>
+    </div>
+  </div>
+  <div class="Compute-n Compute-list">[
+    <span class="Compute-L-n Compute-N-S-value Compute-N-left">9,</span>
+    <span class="Compute-L-n Compute-N-S-value Compute-N-right">8,</span>
+    <span class="Compute-L-n">7,</span>
+    <span class="Compute-L-n">6,</span>
+    <span class="Compute-L-n">5,</span>
+    <span class="Compute-L-n">4,</span>
+    <span class="Compute-L-n">3,</span>
+    <span class="Compute-L-n">2,</span>
+    <span class="Compute-L-n">1,</span>
+    <span class="Compute-L-n">0</span>
+    ]
+  </div>
+  <div class="Compute-n Compute-footer">
+    <div class="Compute-N-state">left: <span class="Compute-F-left Compute-N-left Compute-N-S-value">9</span></div>
+    <div class="Compute-N-state">right: <span class="Compute-F-right Compute-N-right Compute-N-S-value">8</span>
+    </div>
+    <button class="Compute-F-prev Compute-btn">Prev</button>
+    <button class="Compute-F-next Compute-btn">Next</button>
+  </div>
+</section>

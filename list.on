@@ -1,0 +1,14 @@
+[
+ Struct std::collections::HashMap
+ .............................
+ 1. open file and reading each request: id bad for performance
+ 2. maybe store all languages word in a HashMap 
+]
+[
+  RUST  |  thread::spawn
+  ..................................
+   .find a better way to handle each request
+   .instead of spawning  OS thread on each request 
+  ..................................
+  reference:  https://doc.rust-lang.org/book/ch20-02-multithreaded.html
+]
