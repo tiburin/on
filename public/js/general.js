@@ -9,9 +9,8 @@ export const start = async path => {
 }
 
 export const parse = content => {
-  let data = content.split(',')
-  let rank = parseInt(data[0])
-  let [word, sentence] = data[1].split(':').map(value => value.trim())
+  let [rank, word, sentence] = content.split(',').map(value => value.trim())
+  rank = parseInt(rank)
   return [rank, word || "none", sentence || 'none']
 }
 

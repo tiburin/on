@@ -26,7 +26,7 @@ impl<'a> Repo<'a> {
 
     match result {
       Some(n) => Ok(n),
-      None => Ok(format!("{},none: none", rank)),
+      None => Ok(format!("{},none", rank)),
     }
   }
   pub fn read_file(&self, name: &str) -> Result<String, io::Error> {
