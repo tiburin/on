@@ -90,7 +90,7 @@ mod tests {
     let right = read_file(&path);
     let file = repo!().read_line(&path, "-22").unwrap();
     assert_eq!(left.unwrap(), right[1]);
-    assert_eq!(file, format!("{},none: none", "-22"));
+    assert_eq!(file, format!("{},none", "-22"));
   }
   #[test]
   fn count_test() {
