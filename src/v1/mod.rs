@@ -7,6 +7,7 @@ use std::{fmt, thread};
 mod parse;
 pub mod repo;
 mod router;
+mod store;
 
 #[derive(Debug, Clone)]
 pub struct Config {
