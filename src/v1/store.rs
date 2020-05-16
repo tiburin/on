@@ -3,7 +3,7 @@
 
 const MAX: usize = 5000;
 use std::collections::HashMap;
-use std::{io, path::Path};
+use std::{fs, io, path::Path};
 
 fn parse_content(content: String) -> Vec<(i32, String, String)> {
   content
@@ -43,20 +43,6 @@ fn parse_languages(content: String) -> Vec<String> {
   list
 }
 
-fn start(languages: Vec<String>, data: Vec<(i32, String, String)>) {
-  // let data_box = HashMap::new();
-
-  let mut table: HashMap<i32, String> = HashMap::with_capacity(MAX);
-  for (rank, word, sentence) in parse_content("..".to_owned()) {
-    //TODO
-    // insert data into the hashmap
-  }
-
-  for language in languages {
-    // TODO insert into hashmap
-  }
-}
-
 pub fn read_languages() -> Result<Vec<String>, io::Error> {
   let path = Path::new("public/spoken");
 
@@ -72,6 +58,25 @@ pub fn read_languages() -> Result<Vec<String>, io::Error> {
   });
   Ok(list)
 }
+pub fn read_content(name: &str) -> Result<String, io::Error> {
+  fs::read_to_string(format!("public/spoken/{}.on", name))
+}
+
+fn start() {
+  for name in read_languages().unwrap() {
+    let content = read_content(&name).unwrap();
+    let n = parse_content(content);
+    // ...
+  }
+}
+
+fn process(
+  hash: &mut HashMap<String, (i32, String, String)>,
+  name: String,
+  data: (i32, String, String),
+) {
+  hash.insert(name, data);
+}
 
 #[cfg(test)]
 mod tests {
@@ -79,14 +84,36 @@ mod tests {
   use std::panic;
 
   #[test]
+  fn process_okay() {
+    let word = "learn".to_owned();
+    let sentence = "we are going to learn a new language".to_owned();
+    let name = "english".to_owned();
+    let data = (1, word, sentence);
+    let mut container = HashMap::new();
+    process(&mut container, name, data);
+    eprintln!("=--=> {:?}", container);
+  }
+
+  #[test]
+  fn start_test() {
+    start();
+  }
+
+  #[test]
+  pub fn read_content_errors() {
+    assert!(read_content("abc").is_err());
+    assert!(read_content("").is_err());
+  }
+  #[test]
+  pub fn read_content_okay() {
+    assert!(read_content("english").is_ok());
+    assert!(read_content("espanol").is_ok());
+  }
+
+  #[test]
   fn read_languages_okay() {
     let result = read_languages();
     assert!(result.unwrap().len() >= 2);
-  }
-  #[test]
-  fn start_test() {
-    // let content = fs::read_to_string("public/spoken/english.on").unwrap();
-    // start(content)
   }
 
   #[test]
