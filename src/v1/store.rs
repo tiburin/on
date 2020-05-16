@@ -70,28 +70,58 @@ fn start() {
   }
 }
 
-fn process(
-  hash: &mut HashMap<String, (i32, String, String)>,
-  name: String,
-  data: (i32, String, String),
-) {
-  hash.insert(name, data);
+struct Mas {
+  word: String,
+  sentence: String,
+}
+
+fn process(hash: &mut HashMap<i32, Mas>, data: Vec<(i32, String, String)>) {
+  for (rank, word, sentence) in data {
+    hash.insert(rank, Mas { word, sentence });
+  }
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
   use std::panic;
+  fn content_data(name: &str) -> Vec<(i32, String, String)> {
+    match name {
+      "english" => vec![
+        (1, "hello".to_owned(), "using hello".to_owned()),
+        (2, "welcome".to_owned(), "using welcome".to_owned()),
+      ],
+      "espanol" => vec![
+        (1, "hola".to_owned(), "usando hola".to_owned()),
+        (2, "bienvenidos".to_owned(), "usando bienbenidos".to_owned()),
+      ],
+      _ => panic!("data doesn't exit"),
+    }
+  }
+
+  fn languages_data() -> Vec<String> {
+    vec!["english".to_string(), "espanol".to_string()]
+  }
 
   #[test]
   fn process_okay() {
-    let word = "learn".to_owned();
-    let sentence = "we are going to learn a new language".to_owned();
-    let name = "english".to_owned();
-    let data = (1, word, sentence);
-    let mut container = HashMap::new();
-    process(&mut container, name, data);
-    eprintln!("=--=> {:?}", container);
+    let mut store = HashMap::new();
+    for name in languages_data() {
+      let mut lang_box = HashMap::new();
+
+      let data = content_data(&name);
+      process(&mut lang_box, data);
+      store.insert(name, lang_box);
+    }
+
+    for name in languages_data() {
+      for (rank, word, sentence) in content_data(&name) {
+        let lang_box = store.get(&name);
+        let mas = &lang_box.unwrap().get(&rank).unwrap();
+        assert_eq!(mas.word, word);
+        assert_eq!(mas.sentence, sentence);
+      }
+    }
   }
 
   #[test]
