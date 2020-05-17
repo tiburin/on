@@ -5,7 +5,7 @@ const MAX: usize = 5000;
 use std::collections::HashMap;
 use std::{fs, io, path::Path};
 
-fn parse_content(content: String) -> Vec<(i32, String, String)> {
+fn parse_content(content: String) -> Vec<(usize, String, String)> {
   content
     .split("\n")
     .map(|line| {
@@ -62,22 +62,23 @@ pub fn read_content(name: &str) -> Result<String, io::Error> {
   fs::read_to_string(format!("public/spoken/{}.on", name))
 }
 
-fn start() {
-  for name in read_languages().unwrap() {
-    let content = read_content(&name).unwrap();
-    let n = parse_content(content);
-    // ...
-  }
-}
-
 struct Mas {
   word: String,
   sentence: String,
 }
 
-fn process(hash: &mut HashMap<i32, Mas>, data: Vec<(i32, String, String)>) {
+fn process(hash: &mut HashMap<usize, Mas>, data: Vec<(usize, String, String)>) {
   for (rank, word, sentence) in data {
     hash.insert(rank, Mas { word, sentence });
+  }
+}
+fn start(store: &mut HashMap<String, HashMap<usize, Mas>>) {
+  for name in read_languages().unwrap() {
+    let content = read_content(&name).unwrap();
+    let mut lang_box = HashMap::new();
+    let data = parse_content(content);
+    process(&mut lang_box, data);
+    store.insert(name, lang_box);
   }
 }
 
@@ -85,7 +86,12 @@ fn process(hash: &mut HashMap<i32, Mas>, data: Vec<(i32, String, String)>) {
 mod tests {
   use super::*;
   use std::panic;
-  fn content_data(name: &str) -> Vec<(i32, String, String)> {
+
+  fn languages_data() -> Vec<String> {
+    vec!["english".to_string(), "espanol".to_string()]
+  }
+
+  fn content_data(name: &str) -> Vec<(usize, String, String)> {
     match name {
       "english" => vec![
         (1, "hello".to_owned(), "using hello".to_owned()),
@@ -99,10 +105,43 @@ mod tests {
     }
   }
 
-  fn languages_data() -> Vec<String> {
-    vec!["english".to_string(), "espanol".to_string()]
+  fn fake_store_started(store: &mut HashMap<String, HashMap<usize, Mas>>) {
+    for name in vec!["english".to_owned(), "espanol".to_owned()] {
+      let mut lang_box = HashMap::new();
+
+      let data = content_data(&name);
+      process(&mut lang_box, data);
+      store.insert(name, lang_box);
+    }
   }
 
+  type MiTipo = HashMap<String, HashMap<usize, Mas>>;
+
+  fn get_language<'a>(store: &'a MiTipo, name: &str) -> Option<&'a HashMap<usize, Mas>> {
+    store.get(name)
+  }
+  fn get_content(lang_box: &HashMap<usize, Mas>, rank: usize) -> Option<&Mas> {
+    lang_box.get(&rank)
+  }
+
+  #[test]
+  fn user_getting_data_errors() {
+    let mut store = HashMap::new();
+    fake_store_started(&mut store);
+
+    let noexit = get_language(&store, "noexit");
+    assert!(noexit.is_none());
+    let no_lang = get_language(&store, "noexit");
+    assert!(no_lang.is_none());
+
+    let espanol = get_language(&store, "espanol").unwrap();
+    let mas = get_content(espanol, MAX * MAX);
+    assert!(mas.is_none());
+
+    let english = get_language(&store, "english").unwrap();
+    let mas = get_content(english, MAX + MAX);
+    assert!(mas.is_none());
+  }
   #[test]
   fn process_okay() {
     let mut store = HashMap::new();
@@ -126,7 +165,17 @@ mod tests {
 
   #[test]
   fn start_test() {
-    start();
+    let mut store = HashMap::new();
+    start(&mut store);
+    for name in read_languages().unwrap() {
+      let content = read_content(&name).unwrap();
+      let data = parse_content(content);
+      for (rank, word, sentence) in data {
+        let mas = store.get(&name).unwrap().get(&rank).unwrap();
+        assert_eq!(mas.word, word);
+        assert_eq!(mas.sentence, sentence);
+      }
+    }
   }
 
   #[test]
