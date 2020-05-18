@@ -3,7 +3,7 @@ use router::Router;
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
 use std::sync::Arc;
-use std::{fmt, thread};
+use std::{collections::HashMap, fmt, thread};
 mod parse;
 pub mod repo;
 mod router;
@@ -134,11 +134,30 @@ impl Server {
   }
   pub fn start() {
     let config = Arc::new(Config::new());
+    let store = Arc::new(store::start(&mut HashMap::new()));
+    eprintln!(
+      "=--=> {:?}",
+      store.get("english").unwrap().get(&1).unwrap().word
+    );
+    eprintln!(
+      "=--=> {:?}",
+      store.get("espanol").unwrap().get(&1).unwrap().sentence
+    );
+    eprintln!(
+      "=--=> {:?}",
+      store.get("espanol").unwrap().get(&1).unwrap().word
+    );
+    eprintln!(
+      "=--=> {:?}",
+      store.get("espanol").unwrap().get(&1).unwrap().sentence
+    );
     let listener = TcpListener::bind(config.address()).unwrap();
     for stream in listener.incoming() {
       let config = config.clone();
+      let store = store.clone();
       thread::spawn(move || {
         let mut server = Server::new();
+        store.get("hola");
         server.handle_connn(stream.unwrap(), config);
       });
     }

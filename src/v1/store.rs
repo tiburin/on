@@ -62,9 +62,10 @@ pub fn read_content(name: &str) -> Result<String, io::Error> {
   fs::read_to_string(format!("public/spoken/{}.on", name))
 }
 
-struct Mas {
-  word: String,
-  sentence: String,
+#[derive(Clone)]
+pub struct Mas {
+  pub word: String,
+  pub sentence: String,
 }
 
 fn process(hash: &mut HashMap<usize, Mas>, data: Vec<(usize, String, String)>) {
@@ -72,7 +73,8 @@ fn process(hash: &mut HashMap<usize, Mas>, data: Vec<(usize, String, String)>) {
     hash.insert(rank, Mas { word, sentence });
   }
 }
-fn start(store: &mut HashMap<String, HashMap<usize, Mas>>) {
+type MiTipo = HashMap<String, HashMap<usize, Mas>>;
+pub fn start(store: &mut MiTipo) -> MiTipo {
   for name in read_languages().unwrap() {
     let content = read_content(&name).unwrap();
     let mut lang_box = HashMap::new();
@@ -80,6 +82,7 @@ fn start(store: &mut HashMap<String, HashMap<usize, Mas>>) {
     process(&mut lang_box, data);
     store.insert(name, lang_box);
   }
+  store.clone()
 }
 
 #[cfg(test)]
