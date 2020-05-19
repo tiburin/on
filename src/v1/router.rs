@@ -77,27 +77,35 @@ impl<'a, 'b> Router<'a, 'b> {
 }
 #[cfg(test)]
 mod tests {
+  use crate::v1::store;
+  use crate::v1::store::Storage;
   use crate::v1::Res;
   use crate::*;
-
+  use std::sync::Arc;
   fn not_found(res: &Res) {
     assert_eq!(res.body, "Not found");
     assert_eq!(res.status, "404 NOT FOUND");
     assert_eq!(res.file, "text/plain");
   }
 
+  fn get_storate() -> Arc<Storage> {
+    Arc::new(store::Storage::new())
+  }
+
   #[test]
   fn off_file_test() {
     let mut conn = conn!("GET", "/spoken/english");
-    let res = conn.router();
+    let storage = Arc::new(store::Storage::new());
+    let res = conn.router(storage);
     assert_eq!(res.status, "200 Ok");
     assert_eq!(res.file, "text/plain");
     assert!(res.body.contains("1,"));
   }
   #[test]
   fn js_file_test() {
+    let storage = get_storate();
     let mut conn = conn!("GET", "app.js");
-    let res = conn.router();
+    let res = conn.router(get_storate());
     assert_eq!(res.status, "200 Ok");
     assert_eq!(res.file, "application/javascript");
     assert!(res.body.contains("const"));
@@ -105,7 +113,7 @@ mod tests {
   #[test]
   fn css_file_test() {
     let mut conn = conn!("GET", "app.css");
-    let res = conn.router();
+    let res = conn.router(get_storate());
     assert_eq!(res.status, "200 Ok");
     assert_eq!(res.file, "text/css");
     assert!(res.body.contains("background-color"));
@@ -114,7 +122,7 @@ mod tests {
   fn path_not_found_test() {
     for n in vec!["GET", "POST", "DELETE", "PUT"] {
       let mut conn = conn!(n, "/dev/test");
-      not_found(conn.router());
+      not_found(conn.router(get_storate()));
     }
   }
 }

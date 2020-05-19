@@ -3,11 +3,12 @@ use router::Router;
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
 use std::sync::Arc;
-use std::{collections::HashMap, fmt, thread};
+use std::{fmt, thread};
 mod parse;
 pub mod repo;
 mod router;
 mod store;
+use store::Storage;
 
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -114,8 +115,8 @@ impl Conn<'_> {
       Err(MiError::new("Not enough data to parse"))
     }
   }
-  fn router(&mut self) -> &Res {
-    Router::new(self, repo::Repo::new(&self.req.clone())).route();
+  fn router(&mut self, storage: Arc<Storage>) -> &Res {
+    Router::new(self, repo::Repo::new(&self.req.clone(), &storage)).route();
     &self.res
   }
   fn send(&mut self) -> String {
@@ -134,41 +135,29 @@ impl Server {
   }
   pub fn start() {
     let config = Arc::new(Config::new());
-    let store = Arc::new(store::start(&mut HashMap::new()));
-    eprintln!(
-      "=--=> {:?}",
-      store.get("english").unwrap().get(&1).unwrap().word
-    );
-    eprintln!(
-      "=--=> {:?}",
-      store.get("espanol").unwrap().get(&1).unwrap().sentence
-    );
-    eprintln!(
-      "=--=> {:?}",
-      store.get("espanol").unwrap().get(&1).unwrap().word
-    );
-    eprintln!(
-      "=--=> {:?}",
-      store.get("espanol").unwrap().get(&1).unwrap().sentence
-    );
+    let storage = Arc::new(store::Storage::new());
     let listener = TcpListener::bind(config.address()).unwrap();
     for stream in listener.incoming() {
       let config = config.clone();
-      let store = store.clone();
+      let storage = storage.clone();
       thread::spawn(move || {
         let mut server = Server::new();
-        store.get("hola");
-        server.handle_connn(stream.unwrap(), config);
+        server.handle_connn(stream.unwrap(), config, storage);
       });
     }
   }
-  pub fn handle_connn(&mut self, mut stream: TcpStream, config: Arc<Config>) {
+  pub fn handle_connn(
+    &mut self,
+    mut stream: TcpStream,
+    config: Arc<Config>,
+    storage: Arc<Storage>,
+  ) {
     let end = stream.read(&mut self.buffer).unwrap();
 
     let mut conn = Conn::new(config);
 
     conn.parse(&self.buffer, end).unwrap();
-    conn.router();
+    conn.router(storage);
     Server::send(&mut conn, &mut stream);
   }
   fn send(conn: &mut Conn, stream: &mut TcpStream) {

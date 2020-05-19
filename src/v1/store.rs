@@ -62,7 +62,7 @@ pub fn read_content(name: &str) -> Result<String, io::Error> {
   fs::read_to_string(format!("public/spoken/{}.on", name))
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Mas {
   pub word: String,
   pub sentence: String,
@@ -84,7 +84,19 @@ pub fn start(store: &mut MiTipo) -> MiTipo {
   }
   store.clone()
 }
-
+#[derive(Debug)]
+pub struct Storage {
+  pub store: MiTipo,
+  pub languages: Vec<String>,
+}
+impl Storage {
+  pub fn new() -> Self {
+    Self {
+      store: start(&mut HashMap::new()),
+      languages: read_languages().unwrap(),
+    }
+  }
+}
 #[cfg(test)]
 mod tests {
   use super::*;

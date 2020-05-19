@@ -2,8 +2,12 @@
 macro_rules! repo {
   () => {{
     use crate::v1::repo::Repo;
+    use crate::v1::store;
+
     use crate::v1::Req;
-    Repo::new(&Req::new())
+    use std::sync::Arc;
+    let storage = Arc::new(store::Storage::new());
+    Repo::new(&Req::new(), &storage.clone())
   }};
 }
 #[macro_export]
@@ -25,7 +29,8 @@ macro_rules! conn {
     let mut conn = conn!("new");
     let (buffer, end) = share::data();
     conn.parse(&buffer, end).unwrap();
-    conn.router();
+    let storage = Arc::new(store::Storage::new());
+    conn.router(storage);
     conn
   }};
 }

@@ -1,20 +1,27 @@
+use super::store::Storage;
 use super::Req;
 use std::cmp;
 use std::fs::{self, File};
 use std::io::{self, prelude::*, BufReader};
 use std::path::Path;
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct Repo<'a> {
   pub public: String,
   pub req: &'a Req<'a>,
+  pub storage: &'a Arc<Storage>,
 }
 
 impl<'a> Repo<'a> {
-  pub fn new(req: &'a Req<'a>) -> Self {
+  pub fn new(req: &'a Req<'a>, storage: &'a Arc<Storage>) -> Self {
     let path = std::env::current_dir().unwrap();
     let public = format!("{}/public", path.display());
-    Self { public, req }
+    Self {
+      public,
+      req,
+      storage,
+    }
   }
   pub fn read_line(&self, path: &str, rank: &str) -> Result<String, io::Error> {
     let content = BufReader::new(File::open(path)?);
@@ -25,7 +32,13 @@ impl<'a> Repo<'a> {
       .find(|line| line.trim().starts_with(rank));
 
     match result {
-      Some(n) => Ok(n),
+      Some(n) => {
+        // DATA AVAILABLE TO SERVE
+        // let mas = self.storage.store.get("english").unwrap().get(&1).unwrap();
+        // let content = format!("1,{}, {} -> perro mago", mas.word, mas.sentence);
+        // Ok(content)
+        Ok(n)
+      }
       None => Ok(format!("{},none", rank)),
     }
   }
