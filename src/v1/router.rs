@@ -58,16 +58,15 @@ impl<'a, 'b> Router<'a, 'b> {
 
   fn files(&mut self) {
     let req = &self.conn.req;
-    if let Some(last) = req.path_list.last() {
+    if let Some(name) = req.path_list.last() {
       if let Some(file) = req.file {
-        let path = format!("{}.{}", last, file);
+        let path = format!("{}.{}", name, file);
         if let Ok(content) = self.repo.read_file(&path) {
           self.put_content(file, content)
         }
       } else {
         if let Some(rank) = &req.rank {
-          let path = format!("public/spoken/{}.on", last);
-          if let Ok(content) = self.repo.read_line(&path, &rank) {
+          if let Some(content) = self.repo.read_line(name, rank) {
             self.put_content("off", content)
           }
         }
@@ -103,7 +102,6 @@ mod tests {
   }
   #[test]
   fn js_file_test() {
-    let storage = get_storate();
     let mut conn = conn!("GET", "app.js");
     let res = conn.router(get_storate());
     assert_eq!(res.status, "200 Ok");

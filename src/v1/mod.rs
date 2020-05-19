@@ -77,7 +77,7 @@ pub struct Req<'a> {
   pub raw: Raw,
   pub path: Option<String>,
   pub path_list: Vec<String>,
-  pub rank: Option<String>,
+  pub rank: Option<usize>,
   pub method: Method,
   pub file: Option<&'a str>,
 }
@@ -192,7 +192,7 @@ mod tests {
     let req = conn!().req;
     assert_eq!(req.path.as_ref().unwrap(), "/spoken/espanol/1");
     assert_eq!(req.path_list, ["spoken", "espanol"]);
-    assert_eq!(req.rank.as_ref().unwrap(), "1");
+    assert_eq!(req.rank.unwrap(), 1);
     assert!(req.method == Method::GET);
     assert!(req.raw.header.as_ref().unwrap().contains("HTTP/1.1"));
     assert_eq!(req.raw.body.as_ref().unwrap(), &"");

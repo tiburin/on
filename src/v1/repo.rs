@@ -1,8 +1,8 @@
 use super::store::Storage;
 use super::Req;
 use std::cmp;
-use std::fs::{self, File};
-use std::io::{self, prelude::*, BufReader};
+use std::fs::{self};
+use std::io;
 use std::path::Path;
 use std::sync::Arc;
 
@@ -23,24 +23,8 @@ impl<'a> Repo<'a> {
       storage,
     }
   }
-  pub fn read_line(&self, path: &str, rank: &str) -> Result<String, io::Error> {
-    let content = BufReader::new(File::open(path)?);
-    let result = content
-      .lines()
-      .filter_map(|line| line.ok())
-      .filter(|line| line != "")
-      .find(|line| line.trim().starts_with(rank));
-
-    match result {
-      Some(n) => {
-        // DATA AVAILABLE TO SERVE
-        // let mas = self.storage.store.get("english").unwrap().get(&1).unwrap();
-        // let content = format!("1,{}, {} -> perro mago", mas.word, mas.sentence);
-        // Ok(content)
-        Ok(n)
-      }
-      None => Ok(format!("{},none", rank)),
-    }
+  pub fn read_line(&self, name: &str, rank: &usize) -> Option<String> {
+    Storage::get_line(self.storage.store.get(name), *rank)
   }
   pub fn read_file(&self, name: &str) -> Result<String, io::Error> {
     let dir = match &self.req.file {
@@ -91,20 +75,7 @@ impl<'a> Repo<'a> {
 mod tests {
   use crate::*;
   use std::fs;
-  fn read_file(file: &str) -> Vec<String> {
-    let content = fs::read_to_string(file).unwrap();
-    content.trim().split("\n").map(|n| n.to_string()).collect()
-  }
-  #[test]
 
-  fn read_line_test() {
-    let path = repo!().path("spoken/english.on");
-    let left = repo!().read_line(&path, "2");
-    let right = read_file(&path);
-    let file = repo!().read_line(&path, "-22").unwrap();
-    assert_eq!(left.unwrap(), right[1]);
-    assert_eq!(file, format!("{},none", "-22"));
-  }
   #[test]
   fn count_test() {
     assert!(repo!().count().parse::<i32>().is_ok());

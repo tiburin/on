@@ -63,8 +63,8 @@ impl<'a, 'b> Parser<'a, 'b> {
           _ => (),
         }
       }
-      if let Ok(number) = end.parse::<i32>() {
-        self.req.rank = Some(number.to_string());
+      if let Ok(number) = end.parse::<usize>() {
+        self.req.rank = Some(number);
       }
       self.req.path_list = list.iter().map(|v| v.to_string()).collect();
     }
@@ -94,6 +94,6 @@ mod tests {
     assert_eq!(req.file.unwrap(), "js");
 
     let req = parser.path("/english/spoken/55").unwrap();
-    assert_eq!(req.rank.as_ref().unwrap(), "55");
+    assert_eq!(req.rank.unwrap(), 55);
   }
 }

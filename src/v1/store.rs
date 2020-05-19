@@ -30,18 +30,6 @@ fn parse_content(content: String) -> Vec<(usize, String, String)> {
     })
     .collect()
 }
-fn parse_languages(content: String) -> Vec<String> {
-  let list: Vec<String> = content
-    .split("\n")
-    .filter(|n| n != &"")
-    .map(|n| n.trim().to_owned())
-    .collect();
-
-  if list.len() < 2 {
-    panic!("languages need to be more than 2 CURRENT {}", list.len())
-  }
-  list
-}
 
 pub fn read_languages() -> Result<Vec<String>, io::Error> {
   let path = Path::new("public/spoken");
@@ -56,6 +44,9 @@ pub fn read_languages() -> Result<Vec<String>, io::Error> {
     };
     acc
   });
+  if list.len() < 2 {
+    panic!("languages need to be more than 2 CURRENT {}", list.len())
+  }
   Ok(list)
 }
 pub fn read_content(name: &str) -> Result<String, io::Error> {
@@ -96,7 +87,21 @@ impl Storage {
       languages: read_languages().unwrap(),
     }
   }
+  pub fn get_line(hash_map: Option<&HashMap<usize, Mas>>, rank: usize) -> Option<String> {
+    if let Some(lang_box) = hash_map {
+      match lang_box.get(&rank) {
+        Some(mas) => {
+          let data = format!("{},{},{}", rank, mas.word, mas.sentence);
+          Some(data)
+        }
+        _ => None,
+      }
+    } else {
+      None
+    }
+  }
 }
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -114,7 +119,7 @@ mod tests {
       ],
       "espanol" => vec![
         (1, "hola".to_owned(), "usando hola".to_owned()),
-        (2, "bienvenidos".to_owned(), "usando bienbenidos".to_owned()),
+        (2, "bienvenidos".to_owned(), "usando bienvenidos".to_owned()),
       ],
       _ => panic!("data doesn't exit"),
     }
@@ -137,6 +142,31 @@ mod tests {
   }
   fn get_content(lang_box: &HashMap<usize, Mas>, rank: usize) -> Option<&Mas> {
     lang_box.get(&rank)
+  }
+
+  #[test]
+  fn app_data_exist_errors() {
+    let mut store = HashMap::new();
+    fake_store_started(&mut store);
+    let result = Storage::get_line(store.get("english"), MAX + 1);
+    assert!(result.is_none());
+
+    let result = Storage::get_line(store.get("english"), 8);
+    assert!(result.is_none());
+  }
+  #[test]
+  fn app_data_exist_okay() {
+    let mut store = HashMap::new();
+    fake_store_started(&mut store);
+    let result = Storage::get_line(store.get("english"), 2);
+    assert_eq!(result, Some("2,welcome,using welcome".to_owned()));
+    let result = Storage::get_line(store.get("english"), 1);
+    assert_eq!(result, Some("1,hello,using hello".to_owned()));
+
+    let result = Storage::get_line(store.get("espanol"), 2);
+    assert_eq!(result, Some("2,bienvenidos,usando bienvenidos".to_owned()));
+    let result = Storage::get_line(store.get("espanol"), 1);
+    assert_eq!(result, Some("1,hola,usando hola".to_owned()));
   }
 
   #[test]
@@ -208,25 +238,6 @@ mod tests {
   fn read_languages_okay() {
     let result = read_languages();
     assert!(result.unwrap().len() >= 2);
-  }
-
-  #[test]
-  fn parse_languages_errors() {
-    let result = panic::catch_unwind(|| parse_languages(format!("a\n")));
-    assert!(result.is_err());
-
-    let result = panic::catch_unwind(|| parse_languages(format!("")));
-    assert!(result.is_err());
-  }
-  #[test]
-  fn parse_languages_okay() {
-    let result = parse_languages(format!("a\nb\nb"));
-    assert_eq!(result, ["a", "b", "b"]);
-
-    let stage2 = "\nenglish\nespanol\nportugues";
-    let result = parse_languages(format!("a\nb\nz{}", stage2));
-    let response = ["a", "b", "z", "english", "espanol", "portugues"];
-    assert_eq!(result, response);
   }
 
   #[test]
