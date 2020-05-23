@@ -4,6 +4,7 @@
 const MAX: usize = 5000;
 use std::collections::HashMap;
 use std::{fs, io, path::Path};
+type StoreType = HashMap<String, HashMap<usize, Mas>>;
 
 fn parse_content(content: String) -> Vec<(usize, String, String)> {
   content
@@ -64,8 +65,8 @@ fn process(hash: &mut HashMap<usize, Mas>, data: Vec<(usize, String, String)>) {
     hash.insert(rank, Mas { word, sentence });
   }
 }
-type MiTipo = HashMap<String, HashMap<usize, Mas>>;
-pub fn start(store: &mut MiTipo) -> MiTipo {
+
+pub fn start(store: &mut StoreType) -> StoreType {
   for name in read_languages().unwrap() {
     let content = read_content(&name).unwrap();
     let mut lang_box = HashMap::new();
@@ -77,7 +78,7 @@ pub fn start(store: &mut MiTipo) -> MiTipo {
 }
 #[derive(Debug)]
 pub struct Storage {
-  pub store: MiTipo,
+  pub store: StoreType,
   pub languages: Vec<String>,
 }
 impl Storage {
@@ -125,8 +126,8 @@ mod tests {
     }
   }
 
-  fn fake_store_started(store: &mut HashMap<String, HashMap<usize, Mas>>) {
-    for name in vec!["english".to_owned(), "espanol".to_owned()] {
+  fn fake_store_started(store: &mut StoreType) {
+    for name in languages_data() {
       let mut lang_box = HashMap::new();
 
       let data = content_data(&name);
@@ -135,9 +136,7 @@ mod tests {
     }
   }
 
-  type MiTipo = HashMap<String, HashMap<usize, Mas>>;
-
-  fn get_language<'a>(store: &'a MiTipo, name: &str) -> Option<&'a HashMap<usize, Mas>> {
+  fn get_language<'a>(store: &'a StoreType, name: &str) -> Option<&'a HashMap<usize, Mas>> {
     store.get(name)
   }
   fn get_content(lang_box: &HashMap<usize, Mas>, rank: usize) -> Option<&Mas> {
